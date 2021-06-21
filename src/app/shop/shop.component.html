@@ -6,18 +6,27 @@
         <option>
           Alphabetical
         </option>
+        <option>
+          Price: Low to High
+        </option>
+        <option>
+          Price: High to Low
+        </option>
       </select>
 
       <h5 class="text-warning ml-3">Brands</h5>
       <ul class="list-group mb-3">
-        <li class="list-group-item" *ngFor="let brand of brands">
+        <li class="list-group-item" *ngFor="let brand of brands" [class.active]="brand.id === this.brandIdSelected"
+          [value]="brand.id" (click)="onBrandIdSelected(brand.id)">
           {{brand.name}}
         </li>
       </ul>
       <h5 class="text-warning ml-3">Types</h5>
       <ul class="list-group my-3">
-        <li class="list-group-item" *ngFor="let type of productTypes">
-         {{type.name}}
+        <li class="list-group-item" *ngFor="let type of productTypes"
+          [class.active]="type.id === this.productTypeIdSelected" [value]="type.id"
+          (click)="onProductTypeIdSelected(type.id)">
+          {{type.name}}
         </li>
       </ul>
     </section>
