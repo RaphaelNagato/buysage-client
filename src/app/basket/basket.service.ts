@@ -3,7 +3,12 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { Basket, IBasket, IBasketItem } from '../shared/models/basket';
+import {
+  Basket,
+  IBasket,
+  IBasketItem,
+  IBasketTotals,
+} from '../shared/models/basket';
 import { IProduct } from '../shared/models/product';
 
 @Injectable({
@@ -12,7 +17,9 @@ import { IProduct } from '../shared/models/product';
 export class BasketService {
   baseUrl = environment.apiUrl;
   private basketSource = new BehaviorSubject<IBasket | null>(null);
+  private basketTotalSource = new BehaviorSubject<IBasketTotals | null>(null);
   basket$ = this.basketSource.asObservable();
+  basketTotal$ = this.basketTotalSource.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -20,6 +27,7 @@ export class BasketService {
     return this.http.get<IBasket>(`${this.baseUrl}basket?id=${id}`).pipe(
       map((basket: IBasket) => {
         this.basketSource.next(basket);
+        this.calculateTotals();
       })
     );
   }
@@ -28,6 +36,7 @@ export class BasketService {
     return this.http.post<IBasket>(this.baseUrl + 'basket', basket).subscribe(
       (response: IBasket) => {
         this.basketSource.next(response);
+        this.calculateTotals();
       },
       (err) => {
         console.log(err);
@@ -49,7 +58,16 @@ export class BasketService {
     this.setBasket(basket);
   }
 
-  addOrUpdateItems(
+  private calculateTotals() {
+    const basket = this.getCurrentBasketValue();
+    const shipping = 0;
+    const subTotal =
+      basket?.items.reduce((a, b) => b.price * b.quantity + a, 0) ?? 0;
+    const total = shipping + subTotal;
+    this.basketTotalSource.next({ shipping, subTotal, total });
+  }
+
+  private addOrUpdateItems(
     items: IBasketItem[],
     itemToAdd: IBasketItem,
     quantity: number
@@ -64,13 +82,16 @@ export class BasketService {
     return items;
   }
 
-  createBasket(): IBasket {
+  private createBasket(): IBasket {
     const basket = new Basket();
     localStorage.setItem('basket_id', basket.id);
     return basket;
   }
 
-  mapProductItemToBasketItem(item: IProduct, quantity: number): IBasketItem {
+  private mapProductItemToBasketItem(
+    item: IProduct,
+    quantity: number
+  ): IBasketItem {
     return {
       id: item.id,
       quantity,
