@@ -58,6 +58,59 @@ export class BasketService {
     this.setBasket(basket);
   }
 
+  incrementItemQuantity(item: IBasketItem) {
+    console.log(item.id);
+    const basket = this.getCurrentBasketValue();
+    const foundItemIndex = basket?.items.findIndex((x) => x.id === item.id);
+    console.log(foundItemIndex);
+    if (basket && foundItemIndex !== undefined) {
+      basket.items[foundItemIndex].quantity++;
+      this.setBasket(basket);
+    }
+  }
+
+  decrementItemQuantity(item: IBasketItem) {
+    const basket = this.getCurrentBasketValue();
+    const foundItemIndex = basket?.items.findIndex((x) => x.id === item.id);
+    if (
+      basket &&
+      foundItemIndex !== undefined &&
+      basket.items[foundItemIndex].quantity > 1
+    ) {
+      basket.items[foundItemIndex].quantity--;
+      this.setBasket(basket);
+    } else {
+      this.removeItemFromBasket(item);
+    }
+  }
+
+  removeItemFromBasket(item: IBasketItem) {
+    const basket = this.getCurrentBasketValue();
+
+    if (basket && basket.items.some((i) => i.id === item.id)) {
+      basket.items = basket.items.filter((i) => i.id !== item.id);
+
+      if (basket.items.length > 0) {
+        this.setBasket(basket);
+      } else {
+        this.deleteBasket(basket);
+      }
+    }
+  }
+
+  deleteBasket(basket: IBasket) {
+    return this.http
+      .delete<IBasket>(`${this.baseUrl}basket?id=${basket.id}`)
+      .subscribe(
+        () => {
+          this.basketSource.next(null);
+          this.basketTotalSource.next(null);
+          localStorage.removeItem('basket_id');
+        },
+        (err) => console.log(err)
+      );
+  }
+
   private calculateTotals() {
     const basket = this.getCurrentBasketValue();
     const shipping = 0;
