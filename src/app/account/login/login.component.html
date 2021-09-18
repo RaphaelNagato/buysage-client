@@ -6,18 +6,20 @@
           Login
         </h1>
       </div>
-      <div class="form-label-group">
-        <input formControlName="email" type="email" id="inputEmail" class="form-control" placeholder="Email Address">
-        <label for="inputEmail">Email Address</label>
-      </div>
-      <div class="form-label-group">
-        <input formControlName="password" type="password" id="inputPassword" class="form-control"
-          placeholder="Password">
-        <label for="inputPassword">Password</label>
-      </div>
 
-      <button type="submit" class="btn btn-md btn-primary btn-block">Sign in</button>
+      <app-text-input formControlName="email" [label]="'Email Address'"></app-text-input>
+      <app-text-input formControlName="password" [label]="'Password'" [type]="'password'"></app-text-input>
+
+      <button [disabled]="loginForm.invalid" type="submit" class="btn btn-md btn-primary btn-block">Sign in</button>
     </form>
+  </div>
+
+  <div class="col-4">
+    <p>Login Form: {{loginForm.status}}</p>
+    <p>Email Status : {{loginForm.get('email')?.status}}</p>
+    <p>Email Touched : {{loginForm.get('email')?.touched}}</p>
+    <p>Email Dirty : {{loginForm.get('email')?.dirty}}</p>
+    <pre>{{loginForm.value | json}}</pre>
   </div>
 
 </div>
